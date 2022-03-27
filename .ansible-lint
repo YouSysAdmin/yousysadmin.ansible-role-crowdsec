@@ -1,0 +1,10 @@
+---
+skip_list:
+  - '106'
+  - '306'
+  - '503'
+  - 'fqcn-builtins'
+  - 'command-instead-of-shell'
+  - 'no-changed-when'
+exclude_paths:
+  - .drone.yml

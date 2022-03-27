@@ -1,0 +1,52 @@
+---
+- name: Install dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - gnupg
+
+- name: Add an apt signing key
+  apt_key:
+    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+
+- name: Add apt repo
+  apt_repository:
+    repo: deb https://packagecloud.io/crowdsec/crowdsec/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release|lower }} main
+    update_cache: true
+
+- name: Install package
+  apt:
+    name:
+      - crowdsec
+
+- name: Deploy main config
+  template:
+    src: etc/crowdsec/config.yaml.j2
+    dest: /etc/crowdsec/config.yaml
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart crowdsec
+
+- name: Deploy whitelist
+  template:
+    src: etc/crowdsec/parsers/s02-enrich/additionalwhitelist.yaml.j2
+    dest: /etc/crowdsec/parsers/s02-enrich/additionalwhitelist.yaml
+    owner: root
+    group: root
+    mode: 0644
+  when: crowdsec_additional_whitelist.enabled
+  notify: restart crowdsec
+
+- name: Flush handlers to apply config
+  meta: flush_handlers
+
+- name: Register agent(s)
+  include_tasks: register_agent.yml
+  when:
+    - crowdsec_delegate_server_hostname != inventory_hostname
+
+- name: Register distributed bouncers(s)
+  include_tasks: add_firewall_bouncer.yml
+  when:
+    - crowdsec_firewall_bouncer.enabled

@@ -1,0 +1,71 @@
+---
+{{ ansible_managed | comment }}
+common:
+  daemonize: {{ crowdsec_common.daemonize }}
+  pid_dir: {{ crowdsec_common.pid_dir }}
+  log_media: {{ crowdsec_common.log_media }}
+  log_level: {{ crowdsec_common.log_level }}
+  log_dir: {{ crowdsec_common.log_dir }}
+  working_dir: {{ crowdsec_common.working_dir }}
+
+config_paths:
+  config_dir: {{ crowdsec_config_paths.config_dir }}
+  data_dir: {{ crowdsec_config_paths.data_dir }}
+  simulation_path: {{ crowdsec_config_paths.simulation_path }}
+  hub_dir: {{ crowdsec_config_paths.hub_dir }}
+  index_path: {{ crowdsec_config_paths.index_path }}
+  notification_dir: {{ crowdsec_config_paths.notification_dir }}
+  plugin_dir: {{ crowdsec_config_paths.plugin_dir }}
+
+crowdsec_service:
+  acquisition_path: {{ crowdsec_service.acquisition_path }}
+  parser_routines: {{ crowdsec_service.parser_routines }}
+
+cscli:
+  output: {{ crowdsec_cscli.output }}
+
+db_config:
+  log_level: {{ crowdsec_db_config.log_level }}
+  type: {{ crowdsec_db_config.type }}
+  db_path: {{ crowdsec_db_config.db_path }}
+{% if crowdsec_db_config.type != 'sqlite' %}
+  max_open_conns: {{ crowdsec_db_config.max_open_conns }}
+  user: {{ crowdsec_db_config.user }}
+  password: {{ crowdsec_db_config.password }}
+  db_name: {{ crowdsec_db_config.db_name }}
+  host: {{ crowdsec_db_config.host }}
+  port: {{ crowdsec_db_config.port }}
+{% endif %}
+  flush:
+    max_items: {{ crowdsec_db_config.flush.max_items }}
+    max_age: {{ crowdsec_db_config.flush.max_age }}
+
+plugin_config:
+  user: {{ crowdsec_plugin_config.user }} # plugin process would be ran on behalf of this user
+  group: {{ crowdsec_plugin_config.group }} # plugin process would be ran on behalf of this group
+
+api:
+  client:
+    insecure_skip_verify: {{ crowdsec_api_client.insecure_skip_verify }}
+    credentials_path: {{ crowdsec_api_client.credentials_path }}
+{% if crowdsec_api_server.enabled %}
+  server:
+    log_level: {{ crowdsec_api_server.log_level }}
+    listen_uri: {{ crowdsec_api_server.listen_uri }}
+    profiles_path: {{ crowdsec_api_server.profiles_path }}
+    console_path: {{ crowdsec_api_server.console_path }}
+{% if crowdsec_api_server.online_client_enabled %}
+    online_client: # Crowdsec API credentials (to push signals and receive bad IPs)
+      credentials_path: {{ crowdsec_api_server.online_client_credentials_path }}
+{% endif %}
+{% if crowdsec_api_server.tls.enabled %}
+    tls:
+      cert_file: {{ crowdsec_api_server.tls.cert_file }}
+      key_file: {{ crowdsec_api_server.tls.key_file }}
+{% endif %}
+{% endif %}
+prometheus:
+  enabled: {{ crowdsec_prometheus.enabled }}
+  level: {{ crowdsec_prometheus.level }}
+  listen_addr: {{ crowdsec_prometheus.listen_addr }}
+  listen_port: {{ crowdsec_prometheus.listen_port }}

@@ -1,0 +1,8 @@
+---
+{{ ansible_managed | comment }}
+name: crowdsecurity/additional-ip-whitelist
+description: "Additional whitelist"
+whitelist:
+  reason: "additional white ip ranges"
+  ip: {{ crowdsec_additional_whitelist.ip|to_yaml }}
+  cidr: {{ crowdsec_additional_whitelist.cidr|to_yaml }}

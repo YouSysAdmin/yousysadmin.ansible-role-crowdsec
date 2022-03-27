@@ -1,0 +1,43 @@
+---
+- name: Gather installed IPtables
+  stat:
+    path: '/usr/lib/systemd/system/iptables.service'
+  register: check_iptables
+
+- name: Gather installed NFtables version
+  stat:
+    path: '/usr/lib/systemd/system/nftables.service'
+  register: check_nftables
+
+- name: Install bouncer for NFtables
+  apt:
+    name:
+      - crowdsec-firewall-bouncer-nftables
+  when: check_nftables.stat.exists
+
+- name: Install bouncer for IPtables
+  apt:
+    name:
+      - crowdsec-firewall-bouncer-iptables
+  when: check_iptables.stat.exists
+
+- name: Register new bouncer
+  command: cscli bouncers add {{ inventory_hostname }} -o raw
+  register: _csbouncer
+  delegate_to: "{{ crowdsec_delegate_server_hostname }}"
+  changed_when: _csbouncer.stderr is not search("already exists")
+
+- name: Deploy bouncer config
+  lineinfile:
+    regex: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+  with_items:
+    - regex: "^api_url"
+      line: "api_url: {{ crowdsec_lapi_url }}"
+    - regex: "^api_key"
+      line: "api_key: {{ _csbouncer.stdout }}"
+  when: _csbouncer.changed
+  notify: restart crowdsec-firewall-bouncer
+  loop_control:
+    label: "{{ item.regex }}"
