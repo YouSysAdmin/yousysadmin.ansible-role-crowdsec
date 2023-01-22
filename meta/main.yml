@@ -2,7 +2,7 @@
 dependencies: []
 galaxy_info:
   author: YouSysAdmin
-  role_name: yousysadmin.crowdsec
+  role_name: ysa.crowdsec
   description: Ansible role for deployng CrowdSec
   company: YouSysAdmin
   license: MIT
